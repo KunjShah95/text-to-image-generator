@@ -1,0 +1,20 @@
+.qodo
+
+# Environment variables and API keys
+.env
+
+# Node modules
+node_modules/
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
+.DS_Store
+Thumbs.db
