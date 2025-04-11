@@ -7,21 +7,86 @@ document.addEventListener('DOMContentLoaded', async () => {
     const resultsContainer = document.getElementById('results');
     const errorContainer = document.getElementById('error');
     const errorMessage = document.getElementById('error-message');
+    
+    // API Key UI elements
+    const apiKeyInput = document.getElementById('api-key');
+    const saveApiKeyBtn = document.getElementById('save-api-key');
+    const toggleApiVisibilityBtn = document.getElementById('toggle-api-visibility');
 
-    // Load API token from .env file
+    // Load API key from localStorage if available
+    if (localStorage.getItem('huggingfaceApiKey')) {
+        apiKeyInput.value = localStorage.getItem('huggingfaceApiKey');
+    }
+
+    // Toggle API key visibility
+    toggleApiVisibilityBtn.addEventListener('click', () => {
+        if (apiKeyInput.type === 'password') {
+            apiKeyInput.type = 'text';
+            toggleApiVisibilityBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+            `;
+        } else {
+            apiKeyInput.type = 'password';
+            toggleApiVisibilityBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+            `;
+        }
+    });
+
+    // Save API key to localStorage
+    saveApiKeyBtn.addEventListener('click', () => {
+        const apiKey = apiKeyInput.value.trim();
+        if (apiKey) {
+            localStorage.setItem('huggingfaceApiKey', apiKey);
+            showTemporaryMessage('API key saved successfully!', 'success');
+        } else {
+            showTemporaryMessage('Please enter an API key', 'error');
+        }
+    });
+
+    function showTemporaryMessage(message, type = 'success') {
+        const messageContainer = document.createElement('div');
+        messageContainer.className = `fixed top-4 right-4 p-3 rounded-lg ${
+            type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+        } shadow-lg transition-opacity duration-300 max-w-xs`;
+        messageContainer.textContent = message;
+        document.body.appendChild(messageContainer);
+        
+        setTimeout(() => {
+            messageContainer.style.opacity = '0';
+            setTimeout(() => {
+                document.body.removeChild(messageContainer);
+            }, 300);
+        }, 3000);
+    }
+
+    // Load API token from multiple sources
     let API_TOKEN = "";
     
-    try {
-        const response = await fetch('./.env');
-        if (response.ok) {
-            const envText = await response.text();
-            const envVars = parseEnvFile(envText);
-            API_TOKEN = envVars.HUGGINGFACE_API_TOKEN;
-        } else {
-            console.error('Failed to load .env file');
+    // 1. Check localStorage first (user provided via UI)
+    if (localStorage.getItem('huggingfaceApiKey')) {
+        API_TOKEN = localStorage.getItem('huggingfaceApiKey');
+    }
+    
+    // 2. If no token in localStorage, try loading from .env file (for development)
+    if (!API_TOKEN) {
+        try {
+            const response = await fetch('./.env');
+            if (response.ok) {
+                const envText = await response.text();
+                const envVars = parseEnvFile(envText);
+                API_TOKEN = envVars.HUGGINGFACE_API_TOKEN;
+            } else {
+                console.log('No .env file found. Please use the API key input field.');
+            }
+        } catch (error) {
+            console.log('Using API key from input field.');
         }
-    } catch (error) {
-        console.error('Error loading .env file:', error);
     }
 
     function parseEnvFile(envText) {
@@ -48,13 +113,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         const model = modelSelect.value;
         const numImages = parseInt(numImagesInput.value);
         
+        // Try to get API key from input if not already loaded
+        if (!API_TOKEN) {
+            API_TOKEN = apiKeyInput.value.trim();
+        }
+        
         if (!prompt) {
             showError("Please enter a prompt to generate images.");
             return;
         }
 
         if (!API_TOKEN) {
-            showError("Please add your Hugging Face API token in the .env file.");
+            showError("Please enter your Hugging Face API token in the input field above.");
             return;
         }
 
@@ -78,8 +148,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function generateImages(prompt, model, numImages) {
         const images = [];
-        const maxRetries = 5; // Maximum number of retries for model loading
-        const retryDelay = 2000; // Delay between retries in milliseconds
+        const maxRetries = model.includes('dreamlike') ? 8 : 5; // More retries for dreamlike models
+        const retryDelay = model.includes('dreamlike') ? 3000 : 2000; // Longer delay for dreamlike models
         
         try {
             // Make multiple requests if more than one image is requested
@@ -89,20 +159,42 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 while (!success && retries < maxRetries) {
                     try {
+                        // Set up request with appropriate timeout for the model
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), model.includes('dreamlike') ? 60000 : 30000);
+                        
+                        // Customize params based on model
+                        let requestBody = { inputs: prompt };
+                        
+                        // Add special parameters for dreamlike models
+                        if (model.includes('dreamlike')) {
+                            requestBody = { 
+                                ...requestBody,
+                                options: {
+                                    wait_for_model: true,
+                                    use_cache: false
+                                }
+                            };
+                        }
+                        
                         const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
                             method: 'POST',
                             headers: {
                                 'Authorization': `Bearer ${API_TOKEN}`,
                                 'Content-Type': 'application/json'
                             },
-                            body: JSON.stringify({ inputs: prompt })
+                            body: JSON.stringify(requestBody),
+                            signal: controller.signal
                         });
+                        
+                        // Clear the timeout
+                        clearTimeout(timeoutId);
 
                         if (!response.ok) {
                             const errorData = await response.json();
                             
                             // Check if model is still loading
-                            if (errorData.error && errorData.error.includes("loading")) {
+                            if (errorData.error && (errorData.error.includes("loading") || errorData.error.includes("currently loading"))) {
                                 console.log(`Model ${model} is still loading. Retrying in ${retryDelay/1000} seconds...`);
                                 errorMessage.textContent = `Model is loading, please wait... (Attempt ${retries + 1}/${maxRetries})`;
                                 errorContainer.classList.remove('hidden');
@@ -136,7 +228,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                             }
                         }
                     } catch (error) {
-                        if (error.message && error.message.includes("loading") && retries < maxRetries) {
+                        if (error.name === 'AbortError') {
+                            errorMessage.textContent = `Request timed out. Retrying... (${retries + 1}/${maxRetries})`;
+                            errorContainer.classList.remove('hidden');
+                            retries++;
+                            continue;
+                        } else if ((error.message && error.message.includes("loading")) && retries < maxRetries) {
                             retries++;
                             await new Promise(resolve => setTimeout(resolve, retryDelay));
                         } else if (retries >= maxRetries - 1) {
