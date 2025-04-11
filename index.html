@@ -1,81 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Image Generator</title>
     <script src="https://cdn.tailwindcss.com?v=4.1"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#3B82F6',
-                        secondary: '#10B981',
-                        dark: '#1F2937',
-                    }
-                }
-            }
-        }
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3B82F6",
+              secondary: "#10B981",
+              dark: "#1F2937",
+            },
+          },
+        },
+      };
     </script>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body class="bg-gray-100 min-h-screen">
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="bg-gray-100 min-h-screen">
     <div class="container mx-auto py-8 px-4">
-        <header class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-dark mb-2">AI Image Generator</h1>
-            <p class="text-gray-600">Create amazing images using Hugging Face AI</p>
-        </header>
+      <header class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-dark mb-2">AI Image Generator</h1>
+        <p class="text-gray-600">Create amazing images using Hugging Face AI</p>
+      </header>
 
-        <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
-            <div class="mb-6">
-                <label for="prompt" class="block text-sm font-medium text-gray-700 mb-2">Enter your prompt:</label>
-                <textarea id="prompt" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Describe the image you want to generate..."></textarea>
-            </div>
-
-            <div class="mb-6 grid grid-cols-2 gap-4">
-                <div>
-                    <label for="model" class="block text-sm font-medium text-gray-700 mb-2">Select Model:</label>
-                    <select id="model" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                        <option value="stabilityai/stable-diffusion-xl-base-1.0">Stable Diffusion XL</option>
-                        <option value="runwayml/stable-diffusion-v1-5">Stable Diffusion v1.5</option>
-                        <option value="CompVis/ldm-text2im-large-256">LDM Text2Image</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="num-images" class="block text-sm font-medium text-gray-700 mb-2">Number of Images:</label>
-                    <input type="number" id="num-images" min="1" max="4" value="1" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                </div>
-            </div>
-
-            <div class="flex justify-center">
-                <button id="generate-btn" class="bg-primary hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 flex items-center">
-                    <span>Generate Images</span>
-                    <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
+      <div
+        class="max-w-3xl mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6"
+      >
+        <!-- API Key Section -->
+        <div id="api-key-section" class="mb-6 border-b border-gray-200 pb-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between">
+            <div class="mb-4 md:mb-0 md:w-7/12">
+              <label
+                for="api-key"
+                class="block text-sm font-medium text-gray-700 mb-2"
+                >Hugging Face API Key:</label
+              >
+              <div class="relative">
+                <input
+                  type="password"
+                  id="api-key"
+                  placeholder="Enter your API key"
+                  class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary pr-10"
+                />
+                <button
+                  id="toggle-api-visibility"
+                  class="absolute inset-y-0 right-0 px-3 text-gray-500 hover:text-gray-700"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
                 </button>
+              </div>
             </div>
-
-            <div id="loading" class="hidden mt-6 text-center">
-                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                <p class="mt-2 text-gray-600">Generating your images...</p>
+            <div class="md:w-4/12">
+              <button
+                id="save-api-key"
+                class="bg-secondary text-white py-2 px-4 rounded hover:bg-green-600 transition duration-200 w-full"
+              >
+                Save API Key
+              </button>
+              <p class="text-xs text-gray-500 mt-2">
+                Your API key is saved locally in your browser only
+              </p>
             </div>
-
-            <div id="error" class="hidden mt-6 p-4 bg-red-100 text-red-700 rounded-lg">
-                <p id="error-message"></p>
-            </div>
-
-            <div id="results" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Generated images will appear here -->
-            </div>
+          </div>
+          <div class="mt-4">
+            <p class="text-sm text-gray-600">
+              <strong>Note:</strong> You need a Hugging Face API key to
+              generate images.
+              <a
+                href="https://huggingface.co/settings/tokens"
+                target="_blank"
+                class="text-primary hover:underline"
+                >Get a free API key here</a
+              >.
+            </p>
+          </div>
         </div>
 
-        <footer class="mt-12 text-center text-gray-500 text-sm">
-            <p>Powered by Hugging Face API | Created with ❤️ and AI</p>
-        </footer>
+        <div class="mb-6">
+          <label
+            for="prompt"
+            class="block text-sm font-medium text-gray-700 mb-2"
+            >Enter your prompt:</label
+          >
+          <textarea
+            id="prompt"
+            rows="3"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Describe the image you want to generate..."
+          ></textarea>
+        </div>
+
+        <div class="mb-6 grid grid-cols-2 gap-4">
+          <div>
+            <label
+              for="model"
+              class="block text-sm font-medium text-gray-700 mb-2"
+              >Select Model:</label
+            >
+            <select
+              id="model"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="stabilityai/stable-diffusion-xl-base-1.0">
+                Stable Diffusion XL
+              </option>
+              <option value="runwayml/stable-diffusion-v1-5">
+                Stable Diffusion v1.5
+              </option>
+              <option value="dreamlike-art/dreamlike-photoreal-2.0">
+                Dreamlike Photoreal
+              </option>
+            </select>
+          </div>
+          <div>
+            <label
+              for="num-images"
+              class="block text-sm font-medium text-gray-700 mb-2"
+              >Number of Images:</label
+            >
+            <input
+              type="number"
+              id="num-images"
+              min="1"
+              max="4"
+              value="1"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+        </div>
+
+        <div class="flex justify-center">
+          <button
+            id="generate-btn"
+            class="bg-primary hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 flex items-center"
+          >
+            <span>Generate Images</span>
+            <svg
+              class="ml-2 w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+        <div id="loading" class="hidden mt-6 text-center">
+          <div
+            class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
+          ></div>
+          <p class="mt-2 text-gray-600">Generating your images...</p>
+        </div>
+
+        <div
+          id="error"
+          class="hidden mt-6 p-4 bg-red-100 text-red-700 rounded-lg"
+        >
+          <p id="error-message"></p>
+        </div>
+
+        <div id="results" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Generated images will appear here -->
+        </div>
+      </div>
+
+      <footer class="mt-12 text-center text-gray-500 text-sm">
+        <p>Powered by Hugging Face API | Created with ❤️ and AI</p>
+      </footer>
     </div>
 
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
