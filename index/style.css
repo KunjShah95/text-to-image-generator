@@ -1,0 +1,215 @@
+/* Custom styles for AI Image Generator */
+
+/* Stylish gradient background */
+body {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Decorative background shapes */
+body::before {
+  content: "";
+  position: fixed;
+  top: -10%;
+  right: -5%;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.03) 70%, transparent 100%);
+  z-index: -1;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  bottom: -15%;
+  left: -5%;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.03) 70%, transparent 100%);
+  z-index: -1;
+}
+
+/* Floating dots background pattern */
+.container {
+  position: relative;
+}
+
+.container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: radial-gradient(#3b82f620 1px, transparent 1px), radial-gradient(#10b98120 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+  z-index: -1;
+  opacity: 0.7;
+}
+
+/* Glass effect for main container */
+.max-w-3xl {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+}
+
+/* Header styling with gradient text */
+header h1 {
+  background: linear-gradient(to right, #3b82f6, #10b981);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 10px rgba(59, 130, 246, 0.1);
+}
+
+/* Custom animated gradient border for the form area */
+.max-w-3xl {
+  position: relative;
+}
+
+.max-w-3xl::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #3B82F6, #10B981, #3B82F6);
+  background-size: 200% 200%;
+  animation: gradientBorder 6s ease infinite;
+  border-radius: inherit;
+  z-index: -1;
+}
+
+@keyframes gradientBorder {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Enhanced button styling with gradient */
+#generate-btn {
+  background: linear-gradient(to right, #3B82F6, #2563EB);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  border: none;
+}
+
+#generate-btn:hover {
+  background: linear-gradient(to right, #2563EB, #1E40AF);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+/* Custom animations */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
+  50% { box-shadow: 0 0 25px rgba(59, 130, 246, 0.6); }
+}
+
+/* Enhancement for textarea focus */
+textarea:focus, select:focus, input:focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  transition: all 0.3s ease;
+}
+
+/* Nice hover effect for result cards */
+#results > div {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(5px);
+}
+
+#results > div:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.15);
+}
+
+/* Enhanced loading animation */
+#loading .animate-spin {
+  border-width: 3px;
+  border-color: #3B82F6 transparent transparent transparent;
+}
+
+#loading {
+  position: relative;
+}
+
+#loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { transform: translate(-50%, -50%) scale(0.7); opacity: 0.6; }
+  50% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+  100% { transform: translate(-50%, -50%) scale(0.7); opacity: 0.6; }
+}
+
+/* Improve button hover state */
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+/* Smooth transition for all interactive elements */
+button, select, input, textarea, a {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c5c5c5;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  #results {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Image loading placeholder */
+#results img {
+  min-height: 200px;
+  background: linear-gradient(110deg, #f5f5f5 8%, #eeeeee 18%, #f5f5f5 33%);
+  background-size: 200% 100%;
+  animation: 1.5s shine linear infinite;
+}
+
+@keyframes shine {
+  to {
+    background-position-x: -200%;
+  }
+}
